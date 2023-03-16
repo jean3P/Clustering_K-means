@@ -1,11 +1,12 @@
 import numpy as np
 import Distance
 from sklearn.metrics import pairwise_distances
-
+from datetime import datetime
 
 def davies_bouldin(X, n_cluster, cluster_k, centroids):
     # print('=== Calculating Davies Bouldin ===')
     # calculate cluster dispersion
+    start_time = datetime.now()
     S = [np.mean([Distance.euclidean(p, centroids[i]) for p in k]) for i, k in enumerate(cluster_k)]
     Ri = []
 
@@ -21,12 +22,14 @@ def davies_bouldin(X, n_cluster, cluster_k, centroids):
 
     # get mean of all Ri values
     dbi = np.mean(Ri)
-
+    end_time = datetime.now()
+    print('== Duration Davies Bouldin: ', (end_time - start_time).total_seconds(), "s.\n")
     return dbi
 
 
 def c_index(clustering, train):
     # print('=== Calculating C-Index ===')
+    start_time = datetime.now()
     total_distance = 0
     n_pairs = 0
     for cluster_id, cluster in enumerate(clustering):
@@ -56,13 +59,15 @@ def c_index(clustering, train):
     max = np.sum(all_distances[-n_pairs:])
     assert len(all_distances[:n_pairs]) == n_pairs
     assert len(all_distances[-n_pairs:]) == n_pairs
-
+    end_time = datetime.now()
+    print('== Duration C-index: ', (end_time - start_time).total_seconds(), "s.\n")
     return (total_distance - min) / (max - min)
 
 
 def dunn_index(clustering):
     # print('=== Calculating Dunn-Index ===')
     # Compute diameter max
+    start_time = datetime.now()
     diameters = []
     for cluster in (clustering):
         distance_matrix = pairwise_distances(cluster, cluster, metric='euclidean')
@@ -75,5 +80,6 @@ def dunn_index(clustering):
             distance_matrix = pairwise_distances(cluster1, cluster2, metric='euclidean')
             # Single linkage -> min
             clusters_distances.append(np.min(distance_matrix))
-
+    end_time = datetime.now()
+    print('== Duration Dunn-index: ', (end_time - start_time).total_seconds(), "s.\n")
     return np.min(clusters_distances) / diameter_max

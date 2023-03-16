@@ -1,5 +1,6 @@
 import numpy as np
 import Distance
+from datetime import datetime
 
 class Deterministic_KMeans:
     def __init__(self, k):
@@ -20,6 +21,7 @@ class Deterministic_KMeans:
         return cluster_centers
 
     def run(self, cluster_centers):
+        start_time = datetime.now()
         clustering_error = 1
         while (True):
             first = False
@@ -45,7 +47,31 @@ class Deterministic_KMeans:
             print('.', end='', flush=True)
             # If the decreasing of the error becomes insignificant we stop (minimum local or global is reached)
             if np.absolute(clustering_error - old_error) < 0.0001 * old_error:
-                print(" Finish K_means: ", self.k, "\n")
+                end_time = datetime.now()
+                print(" Finish K_means: {}".format(self.k), ', duration: ', (end_time-start_time).total_seconds() ,"s.\n")
                 break
 
         return cluster_centers, clustering
+
+    def _get_cluster_labels(self, clusters):
+        # Each sample will get the label of the cluster it was assigned to
+        self.n_samples, self.n_features = self.train_ds.shape
+        labels = np.empty(self.n_samples)
+        for cluster_idx, cluster in enumerate(clusters):
+            for sample_idx in cluster:
+                labels[sample_idx] = cluster_idx
+        return labels
+
+    def _create_clusters(self, centroids):
+         # Assign the samples to the closest centroids
+         clusters = [[] for _ in range(self.k)]
+         for idx, sample in enumerate(self.train_ds):
+             centroid_idx = self._closest_centroid(sample, centroids)
+             clusters[centroid_idx].append(idx)
+         return clusters
+
+    def _closest_centroid(self, sample, centroids):
+        # Distance of the current sample to each centroid
+        distances = [Distance.euclidean(sample, point) for point in centroids]
+        closest_idx = np.argmin(distances)
+        return closest_idx

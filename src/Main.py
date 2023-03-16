@@ -3,6 +3,8 @@ from datetime import datetime
 from sklearn.metrics import accuracy_score
 import numpy as np
 import pandas as pd
+from sklearn.decomposition import PCA
+pca = PCA(2)
 import matplotlib
 
 from ClusteringQuality import davies_bouldin, c_index, dunn_index
@@ -50,10 +52,23 @@ def retrieve_info(cluster_labels, y_train):
 results_db_index ={}
 results_c_index={}
 results_dunn_index={}
+result_labels = {}
+result_unique_labels = {}
+result_centers ={}
 for k in K_values:
     K_means = Deterministic_KMeans(k=k)
     centers = K_means.deterministic_centers(X_train)
+    centroids = np.asarray(centers, dtype='int')
+    result_centers.update({k: centroids})
     cluster_centers, clustering = K_means.run(centers)
+
+    create_clusters = K_means._create_clusters(centers)
+    get_labels = K_means._get_cluster_labels(create_clusters)
+    u_labels = np.unique(get_labels)
+    u_labels = u_labels.astype(int)
+    get_labels = get_labels.astype(int)
+    result_unique_labels.update({k: u_labels})
+    result_labels.update({k: get_labels})
 
     # Davies Boulding index
     db_index = davies_bouldin(X_train, k, clustering, cluster_centers)
@@ -67,10 +82,21 @@ for k in K_values:
     d_idx = dunn_index(clustering)
     results_dunn_index.update({k: d_idx})
 
+# for kk, labels_values in result_labels.items():
+#     df = pca.fit_transform(X_train)
+#     for k in result_unique_labels.keys():
+#         labels_values = result_labels.get(k)
+#         values = result_unique_labels.get(k)
+#         for i in values:
+#             pos = labels_values == i
+#             plt.scatter(df[pos, 0], df[pos, 1], label = i)
+#         centers = result_centers.get(k)
+#         plt.legend()
+#         plt.show()
 
 print("Calculating Clustering Quality")
 
-list_plot = [{"Davies-Bouldin-index": results_db_index}, {"C-index": results_c_index}, {"Dunn-index":results_dunn_index}]
+list_plot = [{"Davies-Bouldin-index": results_db_index}, {"C-index": results_c_index}, {"Dunn-index": results_dunn_index}]
 fig, axs = plt.subplots(3, sharex=False, sharey=False)
 for i, result in enumerate(list_plot):
     name = list(result.keys())
