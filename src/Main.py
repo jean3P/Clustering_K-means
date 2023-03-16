@@ -6,15 +6,11 @@ import pandas as pd
 import matplotlib
 
 from ClusteringQuality import davies_bouldin, c_index, dunn_index
+from Deterministic_KMeans import Deterministic_KMeans
 
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-import os
-
-from sklearn.metrics import accuracy_score
-
-from KMeans import KMeans
 
 dataset_path = '../resources/mnist_small_knn'
 path_results = '../resources/resultsQuality'
@@ -31,12 +27,11 @@ def read_csv(file):
 
 
 train = read_csv(train_csv)
-# test = read_csv(test_csv)
+
 
 X_train = train[:, 1:]
 Y_train = train[:, 0]
-# X_test = test[:, 1:]
-# Y_test = test[:, 0:]
+
 labels = np.unique(Y_train)
 K_values = [5, 7, 9, 10, 12, 15]
 
@@ -56,19 +51,12 @@ results_db_index ={}
 results_c_index={}
 results_dunn_index={}
 for k in K_values:
-    K_means = KMeans(k=k, max_iters=200)
-    y_pred, clustering, centroids = K_means.random_predict(X_train)
-    # y_pred, clustering, centroids = K_means.deterministic_predict(X_train)
-    # print(len(np.unique(y_pred)))
-    # print(retrieve_info(y_pred, Y_train))
-    # reference_labels = retrieve_info(y_pred, Y_train)
-    # print(reference_labels)
-    # number_labels = np.random.rand(len(y_pred))
-    # for i in range(len(y_pred)):
-        # number_labels[i] = reference_labels[y_pred[i]]
+    K_means = Deterministic_KMeans(k=k)
+    centers = K_means.deterministic_centers(X_train)
+    cluster_centers, clustering = K_means.run(centers)
 
     # Davies Boulding index
-    db_index = davies_bouldin(X_train, k, clustering, centroids)
+    db_index = davies_bouldin(X_train, k, clustering, cluster_centers)
     results_db_index.update({k: db_index})
 
     # C-index
@@ -79,13 +67,6 @@ for k in K_values:
     d_idx = dunn_index(clustering)
     results_dunn_index.update({k: d_idx})
 
-    # Dunn index
-    # dunn_index = dunn_index(X_train, hq)
-    # results_dunn_index.update({k:dunn_index})
-
-
-    # Calculating accuracy score
-    # print('value K: ', k, '(%)', accuracy_score(number_labels, Y_train) * 100)
 
 print("Calculating Clustering Quality")
 
@@ -93,17 +74,10 @@ list_plot = [{"Davies-Bouldin-index": results_db_index}, {"C-index": results_c_i
 fig, axs = plt.subplots(3, sharex=False, sharey=False)
 for i, result in enumerate(list_plot):
     name = list(result.keys())
-    # print(name)
     algorimth = list(result.values())
-    # print(algorimth)
     axs[i].plot(list(algorimth[0].keys()), list(algorimth[0].values()))
     axs[i].set(xlabel="Number of clusters", ylabel=name[0])
-    # axs[i].set_title(0)
 
-    # axs[i].xlabel("Number of clusters")
-    # plt.show(block=True)
-    # plt.interactive(False)
-# plt.tight_layout()
 plt.show()
 print("Finish!!")
 
