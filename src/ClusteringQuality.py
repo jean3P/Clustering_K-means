@@ -23,7 +23,7 @@ def davies_bouldin(X, n_cluster, cluster_k, centroids):
     # get mean of all Ri values
     dbi = np.mean(Ri)
     end_time = datetime.now()
-    print('== Duration Davies Bouldin: ', (end_time - start_time).total_seconds(), "s.\n")
+    print('     == Duration Davies Bouldin: ', (end_time - start_time).total_seconds(), "s.\n")
     return dbi
 
 
@@ -60,7 +60,7 @@ def c_index(clustering, train):
     assert len(all_distances[:n_pairs]) == n_pairs
     assert len(all_distances[-n_pairs:]) == n_pairs
     end_time = datetime.now()
-    print('== Duration C-index: ', (end_time - start_time).total_seconds(), "s.\n")
+    print('     == Duration C-index: ', (end_time - start_time).total_seconds(), "s.\n")
     return (total_distance - min) / (max - min)
 
 
@@ -81,5 +81,5 @@ def dunn_index(clustering):
             # Single linkage -> min
             clusters_distances.append(np.min(distance_matrix))
     end_time = datetime.now()
-    print('== Duration Dunn-index: ', (end_time - start_time).total_seconds(), "s.\n")
+    print('     == Duration Dunn-index: ', (end_time - start_time).total_seconds(), "s.\n")
     return np.min(clusters_distances) / diameter_max
